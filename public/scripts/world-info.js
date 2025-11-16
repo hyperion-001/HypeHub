@@ -24,33 +24,6 @@ import { t } from './i18n.js';
 import { accountStorage } from './util/AccountStorage.js';
 import { getOrCreatePersonaDescriptor, setPersonaDescription, user_avatar } from './personas.js';
 
-/**
- * Determines if a lorebook should be visible in the UI dropdown based on naming conventions
- * @param {string} lorebookName - The name of the lorebook
- * @param {string} currentUsername - The current user's username
- * @returns {boolean} Whether the lorebook should be visible in the dropdown
- */
-function isLorebookVisibleInDropdown(lorebookName, currentUsername) {
-    // Admin (default-user) sees everything
-    if (currentUsername === 'default-user') {
-        return true;
-    }
-    
-    // If it doesn't start with "Z-", it's a personal lorebook (show it)
-    if (!lorebookName.startsWith('Z-')) {
-        return true;
-    }
-    
-    // If it starts with "Z-{username}-", it's this user's protected content (show it)
-    const userPrefix = `Z-${currentUsername}-`;
-    if (lorebookName.startsWith(userPrefix)) {
-        return true;
-    }
-    
-    // Otherwise, it's another creator's protected content (hide it)
-    return false;
-}
-
 export const world_info_insertion_strategy = {
     evenly: 0,
     character_first: 1,
@@ -984,19 +957,13 @@ export function setWorldInfoSettings(settings, data) {
     // Add to existing selected WI if it exists
     selected_world_info = selected_world_info.concat(settings.world_info?.globalSelect?.filter((e) => world_names.includes(e)) ?? []);
 
-    // Filter lorebooks based on visibility rules
-    const currentUsername = settings.username || 'default-user';
-    const visibleWorldNames = world_names.filter(name => isLorebookVisibleInDropdown(name, currentUsername));
-
     if (world_names.length > 0) {
         $('#world_info').empty();
     }
 
-    visibleWorldNames.forEach((item, i) => {
-        // Find the original index for the value attribute
-        const originalIndex = world_names.indexOf(item);
-        $('#world_info').append(`<option value='${originalIndex}'${selected_world_info.includes(item) ? ' selected' : ''}>${item}</option>`);
-        $('#world_editor_select').append(`<option value='${originalIndex}'>${item}</option>`);
+    world_names.forEach((item, i) => {
+        $('#world_info').append(`<option value='${i}'${selected_world_info.includes(item) ? ' selected' : ''}>${item}</option>`);
+        $('#world_editor_select').append(`<option value='${i}'>${item}</option>`);
     });
 
     $('#world_info_sort_order').val(accountStorage.getItem(SORT_ORDER_KEY) || '0');
@@ -2033,40 +2000,6 @@ export async function loadWorldInfo(name) {
     return null;
 }
 
-/**
- * Determines if a lorebook should be visible in the UI dropdown based on naming convention.
- * - Admin (default-user) sees everything
- * - Users see their own lorebooks (not starting with Z-) and their protected lorebooks (Z-{username}-)
- * - Users don't see other creators' protected lorebooks (Z-{other-username}-)
- * 
- * @param {string} lorebookName - The name of the lorebook
- * @param {string} currentUser - The current username
- * @returns {boolean} - True if the lorebook should be visible in the dropdown
- */
-function isLorebookVisible(lorebookName, currentUser) {
-    // Remove .json extension if present for comparison
-    const name = lorebookName.replace(/\.json$/i, '');
-    
-    // Admin sees everything
-    if (currentUser === 'default-user') {
-        return true;
-    }
-    
-    // If it doesn't start with "Z-", it's a personal lorebook (show it)
-    if (!name.startsWith('Z-')) {
-        return true;
-    }
-    
-    // If it starts with "Z-{username}-", it's this user's protected content (show it)
-    const userPrefix = `Z-${currentUser}-`;
-    if (name.startsWith(userPrefix)) {
-        return true;
-    }
-    
-    // Otherwise, it's another creator's protected content (hide it)
-    return false;
-}
-
 export async function updateWorldInfoList() {
     const result = await fetch('/api/settings/get', {
         method: 'POST',
@@ -2077,18 +2010,11 @@ export async function updateWorldInfoList() {
     if (result.ok) {
         const data = await result.json();
         const editorSelected = String($('#world_editor_select').find(':selected').text());
-        const currentUsername = data.username || 'default-user';
         world_names = data.world_names?.length ? data.world_names : [];
-        
-        // Filter lorebooks based on visibility rules
-        const visibleWorldNames = world_names.filter(name => 
-            isLorebookVisible(name, currentUsername)
-        );
-        
         $('#world_info').find('option[value!=""]').remove();
         $('#world_editor_select').find('option[value!=""]').remove();
 
-        visibleWorldNames.forEach((item, i) => {
+        world_names.forEach((item, i) => {
             const globalListOption = new Option(item, i.toString());
             globalListOption.selected = selected_world_info.includes(item);
             const editorListOption = new Option(item, i.toString());
