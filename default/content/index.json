@@ -854,5 +854,13 @@
     {
         "filename": "presets/reasoning/OpenAI Harmony.json",
         "type": "reasoning"
+    },
+    {
+        "filename": "characters/bob.png",
+        "type": "character"
+    },
+    {
+        "filename": "worlds/bob-world.json",
+        "type": "world"
     }
 ]
