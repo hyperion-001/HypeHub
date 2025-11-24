@@ -116,16 +116,8 @@
         "type": "background"
     },
     {
-        "filename": "default_Seraphina.png",
-        "type": "character"
-    },
-    {
         "filename": "Seraphina",
         "type": "sprites"
-    },
-    {
-        "filename": "Eldoria.json",
-        "type": "world"
     },
     {
         "filename": "user-default.png",
@@ -854,13 +846,5 @@
     {
         "filename": "presets/reasoning/OpenAI Harmony.json",
         "type": "reasoning"
-    },
-    {
-        "filename": "characters/bob.png",
-        "type": "character"
-    },
-    {
-        "filename": "worlds/bob-world.json",
-        "type": "world"
     }
 ]
