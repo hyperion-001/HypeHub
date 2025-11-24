@@ -116,10 +116,6 @@
         "type": "background"
     },
     {
-        "filename": "Seraphina",
-        "type": "sprites"
-    },
-    {
         "filename": "user-default.png",
         "type": "avatar"
     },
